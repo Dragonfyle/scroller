@@ -5,37 +5,45 @@ document.addEventListener('DOMContentLoaded', function () {
   let isThrottled = false;
   const QUARTER_SECOND = 250;
 
-  document.addEventListener(
-    'wheel',
-    function (e) {
-      e.preventDefault();
-      const direction = e.wheelDeltaY < 0 ? 1 : -1;
-      const NUMBER_OF_SECTIONS = sections.length - 1;
-      const FIRST_SECTION = 0;
-      const requestedSection = currentSectionIndex + direction;
-      console.log(e.wheelDelta);
+  document.addEventListener('wheel', (e) => handleScroll(e), {
+    passive: false,
+  });
 
-      if (
-        isThrottled ||
-        requestedSection > NUMBER_OF_SECTIONS ||
-        requestedSection < FIRST_SECTION
-      ) {
-        return;
-      }
+  function jumpToSection(section) {
+    sections[section].scrollIntoView(true, {
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }
 
-      isThrottled = true;
+  function scroll(requestedSection, direction) {
+    const NUMBER_OF_SECTIONS = sections.length - 1;
+    const FIRST_SECTION = 0;
 
-      setTimeout(() => {
-        isThrottled = false;
-      }, QUARTER_SECOND);
+    if (
+      isThrottled ||
+      requestedSection > NUMBER_OF_SECTIONS ||
+      requestedSection < FIRST_SECTION
+    ) {
+      return;
+    }
 
-      currentSectionIndex = currentSectionIndex + direction;
+    isThrottled = true;
 
-      sections[requestedSection].scrollIntoView(true, {
-        behavior: 'smooth',
-        block: 'start',
-      });
-    },
-    { passive: false }
-  );
+    setTimeout(() => {
+      isThrottled = false;
+    }, QUARTER_SECOND);
+
+    currentSectionIndex = currentSectionIndex + direction;
+
+    jumpToSection(requestedSection);
+  }
+
+  function handleScroll(e) {
+    const direction = e.wheelDeltaY < 0 ? 1 : -1;
+    const requestedSection = currentSectionIndex + direction;
+    console.log(requestedSection);
+    e.preventDefault();
+    scroll(requestedSection, direction);
+  }
 });
